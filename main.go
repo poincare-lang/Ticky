@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 
@@ -12,10 +13,12 @@ import (
 
 var tasks []string
 var lastDeleted string
+var welcomeMessages = []string{"good morning sleepyhead, let's get some work done.", "what's on the menu today?", "ps ps ps! here kitty!"}
+var welcome string
 
 var textTheme = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#7D56F4")).
+	Foreground(lipgloss.Color("#7d56f4")).
 	Align(lipgloss.Right)
 
 var quit = lipgloss.NewStyle().
@@ -32,6 +35,7 @@ func main() {
 
 	createFiles()
 	tasks = read()
+	welcome = RandomMessage()
 
 	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
@@ -61,17 +65,16 @@ func initialModel() model {
 
 func (m model) View() string {
 	// The header
-	s := "\nWhat's on the menu today?\n\n"
+	s := welcome + "\n\n"
 
 	// Iterate over our choices
 	for i, choice := range tasks {
 
 		// Is the cursor pointing at this choice?
-		cursor := "\U00100092" // no cursor
+		cursor := "\U00100092" // unselected box
 		if m.cursor == i {
-			cursor = "\U001000F2"
-			//cursor = lipgloss.NewStyle().Bold(true).Render("✓") // cursor!
-			choice = lipgloss.NewStyle().Align(lipgloss.Center).Render(choice)
+			cursor = textTheme.Render("\U001000F2") //ticked box
+			choice = lipgloss.NewStyle().Align(lipgloss.Center).Strikethrough(true).Render(choice)
 		}
 
 		// Render the row
@@ -128,7 +131,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		// the selected state for the item that the cursor is pointing at.
 		case "enter":
 			if !m.textInput.Focused() {
-				selectChoice(m)
+				SelectChoice(m)
 			} else {
 				command(m.textInput.Value())
 				m.textInput.Reset()
@@ -136,7 +139,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		case " ":
 			if !m.textInput.Focused() {
-				selectChoice(m)
+				SelectChoice(m)
 			}
 		}
 	}
@@ -159,25 +162,25 @@ func command(input string) {
 	switch arguments[0] {
 	case "add":
 		//add a task except for the command argument
-		addTask(strings.Join(arguments[1:], " "))
+		AddTask(strings.Join(arguments[1:], " "))
 	case "undo":
 		//add the last deleted task back
 		if lastDeleted != "" {
-			addTask(lastDeleted)
+			AddTask(lastDeleted)
 			lastDeleted = ""
 		}
 
 	}
 }
 
-// add a task to the list
-func addTask(s string) {
+// AddTask to add a task to the list
+func AddTask(s string) {
 	tasks = append(tasks, s)
 	write(tasks)
 }
 
-// delete a selected choice
-func selectChoice(m model) {
+// SelectChoice delete a selected choice
+func SelectChoice(m model) {
 	if len(tasks) >= 1 {
 		lastDeleted = tasks[m.cursor]
 		tasks = append(tasks[:m.cursor], tasks[m.cursor+1:]...)
@@ -188,4 +191,8 @@ func selectChoice(m model) {
 func (m model) Init() tea.Cmd {
 	//blink da text
 	return textinput.Blink
+}
+
+func RandomMessage() string {
+	return welcomeMessages[rand.Intn(len(welcomeMessages))]
 }
