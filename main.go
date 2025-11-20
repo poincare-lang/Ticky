@@ -15,9 +15,12 @@ var lastDeleted string
 
 var textTheme = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#FFC8DD"))
+	Foreground(lipgloss.Color("#7D56F4")).
+	Align(lipgloss.Right)
 
-var quit = lipgloss.NewStyle().Foreground(lipgloss.Color("#464646"))
+var quit = lipgloss.NewStyle().
+	Foreground(lipgloss.Color("#464646")).
+	Align(lipgloss.Right)
 
 type model struct {
 	textInput textinput.Model
@@ -30,7 +33,7 @@ func main() {
 	createFiles()
 	tasks = read()
 
-	p := tea.NewProgram(initialModel())
+	p := tea.NewProgram(initialModel(), tea.WithAltScreen())
 	if _, err := p.Run(); err != nil {
 		fmt.Printf("Alas, there's been an error: %v", err)
 		os.Exit(1)
@@ -64,14 +67,15 @@ func (m model) View() string {
 	for i, choice := range tasks {
 
 		// Is the cursor pointing at this choice?
-		cursor := " " // no cursor
+		cursor := "\U00100092" // no cursor
 		if m.cursor == i {
-			cursor = ">" // cursor!
-			choice = lipgloss.NewStyle().Strikethrough(true).Render(choice)
+			cursor = "\U001000F2"
+			//cursor = lipgloss.NewStyle().Bold(true).Render("✓") // cursor!
+			choice = lipgloss.NewStyle().Align(lipgloss.Center).Render(choice)
 		}
 
 		// Render the row
-		s += fmt.Sprintf("%s "+textTheme.Render("[ ]")+" %s\n", cursor, choice)
+		s += fmt.Sprintf("%s  %s\n", cursor, choice)
 	}
 
 	s += "\n" + m.textInput.View()
