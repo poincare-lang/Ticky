@@ -26,6 +26,8 @@ Run the executable
 ./tick
 ```
 
+The default save directory is ~/.tick
+
 ## Usage
 
 To add a task, use the :add command. To undo deleting a task, use the :undo command

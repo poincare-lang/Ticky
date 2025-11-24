@@ -18,7 +18,7 @@ var welcome string
 
 var textTheme = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#7d56f4")).
+	Foreground(lipgloss.Color("#34b233")).
 	Align(lipgloss.Right)
 
 var quit = lipgloss.NewStyle().
@@ -71,9 +71,9 @@ func (m model) View() string {
 	for i, choice := range tasks {
 
 		// Is the cursor pointing at this choice?
-		cursor := "\U00100092" // unselected box
+		cursor := "[ ]" // unselected box
 		if m.cursor == i {
-			cursor = textTheme.Render("\U001000F2") //ticked box
+			cursor = textTheme.Render("[x]") //ticked box
 			choice = lipgloss.NewStyle().Align(lipgloss.Center).Strikethrough(true).Render(choice)
 		}
 
@@ -108,8 +108,10 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
-			if !m.textInput.Focused() {
+			if !m.textInput.Focused() && msg.String() == "q" {
 				return m, tea.Quit
+			} else {
+				tea.Quit()
 			}
 		// The "up" and "k" keys move the cursor up
 		case "up":
@@ -132,6 +134,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		case "enter":
 			if !m.textInput.Focused() {
 				SelectChoice(m)
+				if m.cursor > 0 {
+					m.cursor--
+				}
 			} else {
 				command(m.textInput.Value())
 				m.textInput.Reset()
