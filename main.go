@@ -108,10 +108,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 
 		// These keys should exit the program.
 		case "ctrl+c", "q":
-			if !m.textInput.Focused() && msg.String() == "q" {
+			if !m.textInput.Focused() || msg.String() == "ctrl+c" {
 				return m, tea.Quit
-			} else {
-				tea.Quit()
 			}
 		// The "up" and "k" keys move the cursor up
 		case "up":
